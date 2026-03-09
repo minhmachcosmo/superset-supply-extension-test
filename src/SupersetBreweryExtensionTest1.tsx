@@ -16,74 +16,157 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useEffect, createRef } from 'react';
+import React, { useMemo } from 'react';
 import { styled } from '@superset-ui/core';
+import ReactECharts from 'echarts-for-react';
 import { SupersetBreweryExtensionTest1Props, SupersetBreweryExtensionTest1StylesProps } from './types';
 
-// The following Styles component is a <div> element, which has been styled using Emotion
-// For docs, visit https://emotion.sh/docs/styled
-
-// Theming variables are provided for your use via a ThemeProvider
-// imported from @superset-ui/core. For variables available, please visit
-// https://github.com/apache-superset/superset-ui/blob/master/packages/superset-ui-core/src/style/index.ts
-
 const Styles = styled.div<SupersetBreweryExtensionTest1StylesProps>`
-  background-color: ${({ theme }) => theme.colors.secondary.light2};
-  padding: ${({ theme }) => theme.gridUnit * 4}px;
-  border-radius: ${({ theme }) => theme.gridUnit * 2}px;
+  padding: ${({ theme }) => theme.gridUnit * 2}px;
   height: ${({ height }) => height}px;
   width: ${({ width }) => width}px;
-
-  h3 {
-    /* You can use your props to control CSS! */
-    margin-top: 0;
-    margin-bottom: ${({ theme }) => theme.gridUnit * 3}px;
-    font-size: ${({ theme, headerFontSize }) =>
-      theme.typography.sizes[headerFontSize]}px;
-    font-weight: ${({ theme, boldText }) =>
-      theme.typography.weights[boldText ? 'bold' : 'normal']};
-  }
-
-  pre {
-    height: ${({ theme, headerFontSize, height }) =>
-      height - theme.gridUnit * 12 - theme.typography.sizes[headerFontSize]}px;
-  }
 `;
 
-/**
- * ******************* WHAT YOU CAN BUILD HERE *******************
- *  In essence, a chart is given a few key ingredients to work with:
- *  * Data: provided via `props.data`
- *  * A DOM element
- *  * FormData (your controls!) provided as props by transformProps.ts
- */
-
 export default function SupersetBreweryExtensionTest1(props: SupersetBreweryExtensionTest1Props) {
-  // height and width are the height and width of the DOM element as it exists in the dashboard.
-  // There is also a `data` prop, which is, of course, your DATA 🎉
-  const { data, height, width } = props;
+  const { 
+    data, 
+    height, 
+    width, 
+    chartTitle,
+    showLegend,
+    showGrid,
+    lineSmooth,
+    xAxisColumn,
+    yAxisColumn,
+    seriesColumn,
+  } = props;
 
-  const rootElem = createRef<HTMLDivElement>();
+  const chartOption = useMemo(() => {
+    if (!data || data.length === 0) {
+      return {
+        title: {
+          text: 'No Data Available',
+          left: 'center',
+          top: 'middle',
+        },
+      };
+    }
 
-  // Often, you just want to access the DOM and do whatever you want.
-  // Here, you can do that with createRef, and the useEffect hook.
-  useEffect(() => {
-    const root = rootElem.current as HTMLElement;
-    console.log('Plugin element', root);
-  });
+    // Group data by series
+    const seriesMap = new Map<string, { x: number; y: number }[]>();
 
-  console.log('Plugin props', props);
+    data.forEach((record: any) => {
+      const seriesName = record[seriesColumn] || 'Unknown';
+      const xValue = record[xAxisColumn];
+      const yValue = record[yAxisColumn];
+
+      if (!seriesMap.has(seriesName)) {
+        seriesMap.set(seriesName, []);
+      }
+
+      seriesMap.get(seriesName)?.push({ x: xValue, y: yValue });
+    });
+
+    // Sort data within each series by x value
+    seriesMap.forEach((seriesData) => {
+      seriesData.sort((a, b) => a.x - b.x);
+    });
+
+    // Prepare series for ECharts
+    const series = Array.from(seriesMap.entries()).map(([name, values]) => ({
+      name,
+      type: 'line',
+      smooth: lineSmooth,
+      data: values.map(v => [v.x, v.y]),
+      symbolSize: 6,
+      emphasis: {
+        focus: 'series',
+      },
+    }));
+
+    return {
+      title: {
+        text: chartTitle,
+        left: 'center',
+        top: 10,
+        textStyle: {
+          fontSize: 16,
+          fontWeight: 'bold',
+        },
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'cross',
+        },
+      },
+      legend: {
+        show: showLegend,
+        top: 40,
+        type: 'scroll',
+        orient: 'horizontal',
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '10%',
+        top: showLegend ? '15%' : '10%',
+        containLabel: true,
+        show: showGrid,
+        borderColor: '#ddd',
+      },
+      xAxis: {
+        type: 'value',
+        name: xAxisColumn,
+        nameLocation: 'middle',
+        nameGap: 30,
+        splitLine: {
+          show: showGrid,
+        },
+      },
+      yAxis: {
+        type: 'value',
+        name: yAxisColumn,
+        nameLocation: 'middle',
+        nameGap: 50,
+        splitLine: {
+          show: showGrid,
+        },
+      },
+      series,
+      toolbox: {
+        feature: {
+          dataZoom: {
+            yAxisIndex: 'none',
+          },
+          restore: {},
+          saveAsImage: {},
+        },
+        right: 20,
+        top: 10,
+      },
+      dataZoom: [
+        {
+          type: 'inside',
+          start: 0,
+          end: 100,
+        },
+        {
+          start: 0,
+          end: 100,
+          bottom: 20,
+        },
+      ],
+    };
+  }, [data, chartTitle, showLegend, showGrid, lineSmooth, xAxisColumn, yAxisColumn, seriesColumn]);
 
   return (
-    <Styles
-      ref={rootElem}
-      boldText={props.boldText}
-      headerFontSize={props.headerFontSize}
-      height={height}
-      width={width}
-    >
-      <h3>{props.headerText}</h3>
-      <pre>${JSON.stringify(data, null, 2)}</pre>
+    <Styles height={height} width={width}>
+      <ReactECharts
+        option={chartOption}
+        style={{ height: '100%', width: '100%' }}
+        opts={{ renderer: 'canvas' }}
+      />
     </Styles>
   );
 }

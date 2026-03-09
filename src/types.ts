@@ -18,19 +18,30 @@
  */
 import {
   QueryFormData,
-  supersetTheme,
-  TimeseriesDataRecord,
 } from '@superset-ui/core';
 
 export interface SupersetBreweryExtensionTest1StylesProps {
   height: number;
   width: number;
-  headerFontSize: keyof typeof supersetTheme.typography.sizes;
-  boldText: boolean;
+}
+
+export interface StockSimulationDataRecord {
+  Simulation_run: string;
+  Probe_instance: string;
+  Probe_run: number;
+  StockMeasure: number;
+  csm_run_id: string;
+  run_name: string;
 }
 
 interface SupersetBreweryExtensionTest1CustomizeProps {
-  headerText: string;
+  chartTitle: string;
+  showLegend: boolean;
+  showGrid: boolean;
+  lineSmooth: boolean;
+  xAxisColumn: string;
+  yAxisColumn: string;
+  seriesColumn: string;
 }
 
 export type SupersetBreweryExtensionTest1QueryFormData = QueryFormData &
@@ -39,6 +50,5 @@ export type SupersetBreweryExtensionTest1QueryFormData = QueryFormData &
 
 export type SupersetBreweryExtensionTest1Props = SupersetBreweryExtensionTest1StylesProps &
   SupersetBreweryExtensionTest1CustomizeProps & {
-    data: TimeseriesDataRecord[];
-    // add typing here for the props you pass in from transformProps.ts!
+    data: StockSimulationDataRecord[];
   };

@@ -99,28 +99,51 @@ const config: ControlPanelConfig = {
 
   // For control input types, see: superset-frontend/src/explore/components/controls/index.js
   controlPanelSections: [
-    
     {
       label: t('Query'),
       expanded: true,
       controlSetRows: [
         [
           {
-            name: 'cols',
+            name: 'x_axis_column',
             config: {
-              ...sharedControls.groupby,
-              label: t('Columns'),
-              description: t('Columns to group by'),
+              type: 'SelectControl',
+              label: t('X-Axis Column (Time/Step)'),
+              description: t('Column for X-axis (e.g., Probe_run)'),
+              default: null,
+              mapStateToProps: (state: any) => ({
+                choices: state.datasource?.columns || [],
+              }),
+              validators: [validateNonEmpty],
             },
           },
         ],
         [
           {
-            name: 'metrics',
+            name: 'y_axis_column',
             config: {
-              ...sharedControls.metrics,
-              // it's possible to add validators to controls if
-              // certain selections/types need to be enforced
+              type: 'SelectControl',
+              label: t('Y-Axis Column (Value)'),
+              description: t('Column for Y-axis (e.g., StockMeasure)'),
+              default: null,
+              mapStateToProps: (state: any) => ({
+                choices: state.datasource?.columns || [],
+              }),
+              validators: [validateNonEmpty],
+            },
+          },
+        ],
+        [
+          {
+            name: 'series_column',
+            config: {
+              type: 'SelectControl',
+              label: t('Series Column (Groups)'),
+              description: t('Column to group by series (e.g., run_name)'),
+              default: null,
+              mapStateToProps: (state: any) => ({
+                choices: state.datasource?.columns || [],
+              }),
               validators: [validateNonEmpty],
             },
           },
@@ -129,59 +152,63 @@ const config: ControlPanelConfig = {
         [
           {
             name: 'row_limit',
-            config: sharedControls.row_limit,
+            config: {
+              ...sharedControls.row_limit,
+              default: 10000,
+            },
           },
         ],
       ],
     },
     {
-      label: t('Hello Controls!'),
+      label: t('Chart Options'),
       expanded: true,
       controlSetRows: [
         [
           {
-            name: 'header_text',
+            name: 'chart_title',
             config: {
               type: 'TextControl',
-              default: 'Hello, World!',
+              default: 'Stock Simulation Over Time',
               renderTrigger: true,
-              // ^ this makes it apply instantaneously, without triggering a "run query" button
-              label: t('Header Text'),
-              description: t('The text you want to see in the header'),
+              label: t('Chart Title'),
+              description: t('Title displayed at the top of the chart'),
             },
           },
         ],
         [
           {
-            name: 'bold_text',
+            name: 'show_legend',
             config: {
               type: 'CheckboxControl',
-              label: t('Bold Text'),
+              label: t('Show Legend'),
               renderTrigger: true,
               default: true,
-              description: t('A checkbox to make the '),
+              description: t('Display legend for series'),
             },
           },
         ],
         [
           {
-            name: 'header_font_size',
+            name: 'show_grid',
             config: {
-              type: 'SelectControl',
-              label: t('Font Size'),
-              default: 'xl',
-              choices: [
-                // [value, label]
-                ['xxs', 'xx-small'],
-                ['xs', 'x-small'],
-                ['s', 'small'],
-                ['m', 'medium'],
-                ['l', 'large'],
-                ['xl', 'x-large'],
-                ['xxl', 'xx-large'],
-              ],
+              type: 'CheckboxControl',
+              label: t('Show Grid'),
               renderTrigger: true,
-              description: t('The size of your header font'),
+              default: true,
+              description: t('Display grid lines'),
+            },
+          },
+        ],
+        [
+          {
+            name: 'line_smooth',
+            config: {
+              type: 'CheckboxControl',
+              label: t('Smooth Lines'),
+              renderTrigger: true,
+              default: false,
+              description: t('Apply smooth curve to lines'),
             },
           },
         ],
