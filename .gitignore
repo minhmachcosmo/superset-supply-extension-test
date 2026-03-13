@@ -111,3 +111,6 @@ dist
 # build
 esm
 lib
+
+# Test database — regenerate via: python create_test_database.py
+simulation_stock.db
