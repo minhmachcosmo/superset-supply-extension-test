@@ -1,5 +1,20 @@
-# Rafraichir le PATH pour inclure zstd
+# Rafraichir le PATH
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+# Activer Node 18 via nvm-windows (necesaire si 'nvm use' n'a pas ete lance)
+$nvmDir = "$env:LOCALAPPDATA\nvm"
+if (Test-Path $nvmDir) {
+    $node18 = Get-ChildItem $nvmDir -Directory |
+        Where-Object { $_.Name -match '^v18\.' } |
+        Sort-Object Name -Descending |
+        Select-Object -First 1
+    if ($node18) {
+        $env:Path = "$($node18.FullName);$env:Path"
+        Write-Host "Node actif : $(node --version) ($($node18.Name))" -ForegroundColor Green
+    } else {
+        Write-Host "AVERTISSEMENT: Node 18 introuvable dans $nvmDir" -ForegroundColor Yellow
+    }
+}
 
 Write-Host "=== Demarrage du serveur de developpement Superset ===" -ForegroundColor Cyan
 

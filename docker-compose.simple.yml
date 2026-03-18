@@ -1,8 +1,6 @@
-version: "3.8"
-
 services:
   superset:
-    image: apache/superset:latest
+    image: apache/superset:4.1.1
     container_name: superset_brewery
     ports:
       - "8088:8088"

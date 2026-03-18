@@ -1,12 +1,9 @@
 PREVENT_UNSAFE_DB_CONNECTIONS = False
 
-# Autoriser le frontend dev server (port 9000) a communiquer avec le backend
-CORS_OPTIONS = {
-    "supports_credentials": True,
-    "allow_headers": ["*"],
-    "resources": {"/*": {"origins": ["http://localhost:9000", "http://localhost:8088"]}},
-}
-ENABLE_CORS = True
+# Disable HTTP compression so the webpack dev-server proxy never receives
+# gzip/brotli bytes that it has to decompress (avoids garbled content on Windows).
+COMPRESS_REGISTER = False
+COMPRESS_ENABLED = False
 
 # Session cookie accessible depuis le dev server
 SESSION_COOKIE_SAMESITE = None
