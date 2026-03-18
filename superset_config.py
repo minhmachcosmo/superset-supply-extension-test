@@ -22,6 +22,3 @@ TALISMAN_CONFIG = {
     "force_https": False,
     "force_https_permanent": False,
 }
-
-# Desactiver la compression gzip pour eviter les problemes de proxy avec le dev server
-COMPRESS_REGISTER = False

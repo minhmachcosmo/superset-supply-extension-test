@@ -112,5 +112,5 @@ dist
 esm
 lib
 
-# Test database — regenerate via: python create_test_database.py
-simulation_stock.db
+# Local test databases (regenerate with create_test_database.py)
+*.db
