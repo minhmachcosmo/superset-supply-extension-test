@@ -83,6 +83,7 @@ mon-plugin/
 │   ├── types.ts               # Types TypeScript
 │   └── plugin/
 │       ├── index.ts           # Classe ChartPlugin
+│       ├── buildQuery.ts      # Construction de la requête SQL
 │       ├── controlPanel.ts    # Panneau de configuration
 │       └── transformProps.ts  # Transformation des données
 ├── package.json
@@ -97,6 +98,7 @@ mon-plugin/
 
 ```typescript
 import { ChartPlugin } from '@superset-ui/core';
+import buildQuery from './buildQuery';
 import transformProps from './transformProps';
 import controlPanel from './controlPanel';
 import thumbnail from '../images/thumbnail.png';
@@ -110,6 +112,7 @@ export default class MonPlugin extends ChartPlugin {
         thumbnail,
         category: 'Evolution',
       },
+      buildQuery,
       loadChart: () => import('../MonPlugin'),
       transformProps,
       controlPanel,
@@ -120,24 +123,75 @@ export default class MonPlugin extends ChartPlugin {
 
 ### `src/plugin/controlPanel.ts` — Panneau de config
 
+> ⚠️ **Piège critique — format des `choices`**  
+> `state.datasource?.columns` retourne des **objets complets** `{column_name, description, ...}`.  
+> `SelectControl` attend des **tuples** `[value, label]`. Passer des objets bruts provoque un crash React :  
+> `Objects are not valid as a React child (found: object with keys {column_name, ...})`
+
 ```typescript
-import { ControlPanelConfig, sections } from '@superset-ui/chart-controls';
+import { t, validateNonEmpty } from '@superset-ui/core';
+import { ControlPanelConfig, sharedControls } from '@superset-ui/chart-controls';
 
 const config: ControlPanelConfig = {
   controlPanelSections: [
-    sections.legacyTimeseriesTime,
     {
-      label: 'Configuration',
+      label: t('Query'),
       expanded: true,
       controlSetRows: [
-        ['x_axis'],
-        ['metric'],
+        [
+          {
+            name: 'x_axis_column',
+            config: {
+              type: 'SelectControl',
+              label: t('X-Axis Column'),
+              default: null,
+              // ✅ Mapper en tuples [valeur, label] — NE PAS passer les objets directement
+              mapStateToProps: (state: any) => ({
+                choices: (state.datasource?.columns || []).map(
+                  (c: any) => [c.column_name, c.verbose_name || c.column_name]
+                ),
+              }),
+              validators: [validateNonEmpty],
+            },
+          },
+        ],
+        ['adhoc_filters'],
+        [{ name: 'row_limit', config: { ...sharedControls.row_limit, default: 10000 } }],
       ],
     },
   ],
 };
 
 export default config;
+```
+
+### `src/plugin/buildQuery.ts` — Construction de la requête
+
+> ⚠️ **Piège critique — boilerplate invalide**  
+> Le template par défaut utilise `formData.cols` (champ de la table standard) qui est `undefined` dans un plugin custom.  
+> Résultat : `Error: Empty query?` car la requête n'a ni colonnes, ni métriques, ni groupby.
+
+```typescript
+import { buildQueryContext, QueryFormData } from '@superset-ui/core';
+
+export default function buildQuery(formData: QueryFormData) {
+  // ✅ Lire les champs custom définis dans controlPanel.ts
+  const { x_axis_column, y_axis_column, series_column } = formData;
+
+  // Construire la liste des colonnes à sélectionner (SELECT brut, sans agrégation)
+  const columns = [x_axis_column, y_axis_column, series_column].filter(
+    (col): col is string => Boolean(col),
+  );
+
+  return buildQueryContext(formData, baseQueryObject => [
+    {
+      ...baseQueryObject,
+      columns,   // → SELECT x, y, series FROM table
+      metrics: [],
+      groupby: [],
+    },
+  ]);
+}
 ```
 
 ### `src/plugin/transformProps.ts` — Transformation
@@ -605,6 +659,51 @@ npm install cross-env
 → Vérifier que la `key` correspond au `vizType` dans le plugin  
 → Hard refresh : Ctrl+Shift+R
 
+### 🔴 `Objects are not valid as a React child` (crash Y-axis dropdown)
+
+Erreur au moment de choisir une colonne dans un `SelectControl` (X-axis, Y-axis, Series).
+
+**Cause :** `mapStateToProps` retourne `state.datasource?.columns` directement, qui contient des **objets** au lieu de tuples `[value, label]`.
+
+**Fix dans `controlPanel.ts` — pour chaque `SelectControl` :**
+```typescript
+// ❌ Cassé
+mapStateToProps: (state: any) => ({
+  choices: state.datasource?.columns || [],
+}),
+
+// ✅ Correct
+mapStateToProps: (state: any) => ({
+  choices: (state.datasource?.columns || []).map(
+    (c: any) => [c.column_name, c.verbose_name || c.column_name]
+  ),
+}),
+```
+
+### 🔴 `Error: Empty query?` (le chart ne charge pas)
+
+Erreur backend au moment du rendu du chart après avoir configuré les axes.
+
+**Cause :** Le template `buildQuery.ts` lit `formData.cols` (champ standard de la table), qui est `undefined` dans un plugin custom avec des champs `SelectControl` personnalisés. La requête générée est vide (pas de colonnes, pas de métriques).
+
+**Fix dans `buildQuery.ts` :**
+```typescript
+// ❌ Boilerplate cassé
+export default function buildQuery(formData: QueryFormData) {
+  const { cols: groupby } = formData; // cols = undefined !
+  return buildQueryContext(formData, base => [{ ...base, groupby }]);
+}
+
+// ✅ Correct : lire les champs définis dans controlPanel.ts
+export default function buildQuery(formData: QueryFormData) {
+  const { x_axis_column, y_axis_column, series_column } = formData;
+  const columns = [x_axis_column, y_axis_column, series_column].filter(Boolean);
+  return buildQueryContext(formData, base => [
+    { ...base, columns, metrics: [], groupby: [] },
+  ]);
+}
+```
+
 ### ⚠️ Warnings `caniuse-lite is outdated`
 
 Ces warnings sont cosmétiques et n'affectent pas le build :
@@ -652,3 +751,5 @@ Ils n'empêchent pas l'application de fonctionner.
 | `superset_config.py` | Config Flask : CSRF off, TALISMAN off, compression off, cookies session |
 | `start_dev.ps1` | Lance le dev server avec Node 18 auto-détecté et port 9000 libéré |
 | `simulation_stock.db` | Base SQLite de test (exclue de git via `.gitignore`) |
+| `src/plugin/buildQuery.ts` | Requête SQL : colonnes issues des champs custom (pas `formData.cols`) |
+| `src/plugin/controlPanel.ts` | Panneau de config : `choices` en tuples `[value, label]` (pas d'objets bruts) |

@@ -112,7 +112,9 @@ const config: ControlPanelConfig = {
               description: t('Column for X-axis (e.g., Probe_run)'),
               default: null,
               mapStateToProps: (state: any) => ({
-                choices: state.datasource?.columns || [],
+                choices: (state.datasource?.columns || []).map(
+                  (c: any) => [c.column_name, c.verbose_name || c.column_name]
+                ),
               }),
               validators: [validateNonEmpty],
             },
@@ -127,7 +129,9 @@ const config: ControlPanelConfig = {
               description: t('Column for Y-axis (e.g., StockMeasure)'),
               default: null,
               mapStateToProps: (state: any) => ({
-                choices: state.datasource?.columns || [],
+                choices: (state.datasource?.columns || []).map(
+                  (c: any) => [c.column_name, c.verbose_name || c.column_name]
+                ),
               }),
               validators: [validateNonEmpty],
             },
@@ -142,7 +146,9 @@ const config: ControlPanelConfig = {
               description: t('Column to group by series (e.g., run_name)'),
               default: null,
               mapStateToProps: (state: any) => ({
-                choices: state.datasource?.columns || [],
+                choices: (state.datasource?.columns || []).map(
+                  (c: any) => [c.column_name, c.verbose_name || c.column_name]
+                ),
               }),
               validators: [validateNonEmpty],
             },
