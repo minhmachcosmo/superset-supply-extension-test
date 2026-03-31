@@ -17,7 +17,7 @@
  * under the License.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { SupersetClient } from '@superset-ui/core';
+import { SupersetClient, getClientErrorObject } from '@superset-ui/core';
 import { SupplychainWarehouseProps, WarehouseRecord } from './types';
 
 // Leaflet CSS injected inline to avoid external CSS file dependency
@@ -405,19 +405,23 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
     const sql = `UPDATE ${tableName} SET latitude = ${lat}, longitude = ${lng}, address = '${sanitizedAddress}' WHERE id = ${editingId}`;
 
     try {
-      const result = await (SupersetClient as any).post({
+      // Mirror exactly what sqlLab.js does: body + Content-Type header + parseMethod
+      const { json } = await (SupersetClient as any).post({
         endpoint: '/api/v1/sqllab/execute/',
-        jsonPayload: {
+        body: JSON.stringify({
           database_id: Number(databaseId),
           sql,
           client_id: `wh-update-${editingId}-${Date.now()}`,
+          json: true,
           runAsync: false,
           schema: null,
-        },
+          expand_data: true,
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        parseMethod: 'json-bigint',
       });
 
-      // Superset can return HTTP 200 but with an error in the JSON body
-      const json = result?.json;
+      // Superset can return HTTP 200 but with an error status in the JSON body
       if (json?.status === 'error' || json?.error) {
         const errMsg = json.error || json.message || 'SQL execution failed';
         setStatusMsg(`❌ Update failed: ${errMsg}`);
@@ -433,20 +437,19 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
       );
       setStatusMsg('✅ Warehouse updated');
       setEditingId(null);
-    } catch (err: unknown) {
-      // SupersetClient throws a non-standard object { error, errors, message }
-      // rather than a standard Error instance
-      console.error('[SupplychainWarehouse] Save failed:', err);
-      const errObj = err as Record<string, unknown>;
-      const msg = String(
-        errObj?.message ||
-        errObj?.error ||
-        (Array.isArray(errObj?.errors)
-          ? (errObj.errors as Array<Record<string, unknown>>)[0]?.message
-          : undefined) ||
-        'request failed',
-      );
-      setStatusMsg(`❌ Update failed: ${msg}`);
+    } catch (response: unknown) {
+      // Use getClientErrorObject — same pattern as sqlLab.js line 364
+      console.error('[SupplychainWarehouse] Save failed (raw):', response);
+      getClientErrorObject(response as any).then(error => {
+        const msg =
+          error.error ||
+          error.message ||
+          error.statusText ||
+          JSON.stringify(response);
+        setStatusMsg(`❌ Update failed: ${msg}`);
+      }).catch(() => {
+        setStatusMsg(`❌ Update failed: ${String(response)}`);
+      });
     } finally {
       setIsLoading(false);
     }

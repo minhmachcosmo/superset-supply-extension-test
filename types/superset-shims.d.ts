@@ -5,9 +5,26 @@
 declare module '@superset-ui/core' {
   export function t(str: string): string;
   export function validateNonEmpty(value: unknown): string | false;
+  export interface SupersetClientError {
+    error?: string;
+    message?: string;
+    statusText?: string;
+    status?: number;
+    errors?: Array<Record<string, unknown>>;
+    link?: string;
+  }
   export const SupersetClient: {
-    post(opts: { endpoint: string; jsonPayload: Record<string, unknown> }): Promise<unknown>;
+    post(opts: {
+      endpoint: string;
+      body?: string;
+      headers?: Record<string, string>;
+      parseMethod?: string;
+      jsonPayload?: Record<string, unknown>;
+    }): Promise<{ json: Record<string, unknown> }>;
   };
+  export function getClientErrorObject(
+    error: Response | SupersetClientError | Record<string, unknown>,
+  ): Promise<SupersetClientError>;
   export class ChartMetadata {
     constructor(opts: Record<string, unknown>);
   }
