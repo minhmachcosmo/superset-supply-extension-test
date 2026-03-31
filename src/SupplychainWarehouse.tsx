@@ -237,7 +237,8 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
     if (!mapRef.current || leafletMap.current) return;
 
     // Dynamic import to avoid SSR issues
-    import('leaflet').then(L => {
+    import('leaflet').then(mod => {
+      const L = ((mod as any).default as typeof import('leaflet')) || mod;
       if (!mapRef.current || leafletMap.current) return;
 
       const map = L.map(mapRef.current, { zoomControl: true }).setView([20, 0], 2);
@@ -263,7 +264,8 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
 
   // Re-render markers when warehouses change
   useEffect(() => {
-    import('leaflet').then(L => {
+    import('leaflet').then(mod => {
+      const L = ((mod as any).default as typeof import('leaflet')) || mod;
       if (!leafletMap.current) return;
       renderMarkers(L, leafletMap.current, warehouses);
     });
