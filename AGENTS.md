@@ -157,9 +157,43 @@ return buildQueryContext(formData, base => [{ ...base, columns, metrics: [], gro
 - **Node** : 18.19.1 (via nvm-windows)
 - **Superset** : 4.1.1 (Docker `apache/superset:4.1.1`)
 - **React** : 16.13.1 (pas de React 18 features)
-- **Build plugin** : `npm run build`
+- **Build plugin** : `npm run build` (nécessite `--legacy-peer-deps` au premier `npm install`)
 - **Dev server** : `start_dev.ps1` → `localhost:9000`
-- **Login** : admin / admin
+- **Backend Docker** : `localhost:8088` (admin / admin)
+- **SQLite DB path (Docker)** : `/app/superset_home/supplychain_warehouses.db`
+- **SQLite URI Superset** : `sqlite:////app/superset_home/supplychain_warehouses.db`
+
+## Known Pitfalls (Lessons Learned)
+
+### Docker / SQLite
+
+- **Volume mount** : Toujours monter dans `/app/superset_home/` (pas `/app/`). Le répertoire `/app/` est `drwxr-xr-x` owned root — l'user `superset` (uid=1000) ne peut pas créer les fichiers journal SQLite.
+- **Allow DML** : Doit être activé manuellement sur chaque connexion DB dans Superset (Settings → Database Connections → Edit → Advanced → Security → ☑ Allow DML). Sans ça, tout UPDATE/INSERT/DELETE est bloqué.
+- **URI format** : `sqlite:////app/superset_home/supplychain_warehouses.db` (4 slashes : `sqlite://` + absolute path `/app/...`).
+
+### SupersetClient.post
+
+- **Ne PAS utiliser `jsonPayload`** — Superset interne (`sqlLab.js` L352) utilise `body: JSON.stringify(payload)` + `headers: { 'Content-Type': 'application/json' }` + `parseMethod: 'json-bigint'`.
+- **Error handling** : `SupersetClient.post` rejette avec un objet non-standard (pas `Error`). Utiliser `getClientErrorObject(response)` pour extraire `.error || .message || .statusText`.
+
+### React 16 Specifics
+
+- **SyntheticEvent pooling** : Ne jamais accéder `e.target.value` inside a functional setState updater. Capturer la valeur AVANT : `const v = e.target.value; setState(prev => ({ ...prev, field: v }))`.
+- **react-leaflet** : v4 requiert React 18. Utiliser **v3** (`react-leaflet@3.2.5`) avec Superset 4.1.1.
+
+### Leaflet ESM
+
+- **Dynamic import** : `import('leaflet')` retourne le module namespace ESM. L'objet Leaflet est à `module.default` : `const L = ((mod as any).default as typeof import('leaflet')) || mod`.
+
+### TypeScript / Build
+
+- **@types/leaflet** : Épingler à `"1.7.11"` (sans `^`). La v1.9.x utilise `using` (TypeScript 5+).
+- **@superset-ui/core** : Non installé en standalone — stubs dans `types/superset-shims.d.ts`.
+- **Babel** : Toutes les dépendances `@babel/*` alignées sur `^7.25.9`.
+
+### PowerShell
+
+- **JAMAIS `Set-Content -Encoding UTF8`** pour des fichiers JSON — ajoute un BOM invisible qui crash webpack. Utiliser `[System.IO.File]::WriteAllText($path, $content, [System.Text.UTF8Encoding]::new($false))`.
 
 ## Test Utilities
 

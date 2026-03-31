@@ -13,7 +13,6 @@
 | `SPEC_SUPPLYCHAIN.md`        | Spécifications fonctionnelles et techniques complètes       |
 | `AGENTS.md`                  | Guidelines Apache Superset (code standards, patterns)       |
 | `SUPERSET_PLUGIN_GUIDE.md`   | Guide technique : structure plugin, pièges connus, webpack  |
-| `SPEC_V2_BREWERY_PROCESS.md` | Ancien spec (référence pour architecture, NE PAS implémenter) |
 
 ---
 
@@ -48,14 +47,14 @@ sqlite3 supplychain_warehouses.db "SELECT id, name, latitude, longitude FROM war
 
 **Instructions :**
 1. Lire le fichier `docker-compose.simple.yml` existant
-2. Ajouter le volume `./supplychain_warehouses.db:/app/supplychain_warehouses.db` (SANS `:ro`)
+2. Ajouter le volume `./supplychain_warehouses.db:/app/superset_home/supplychain_warehouses.db` (dans `/app/superset_home/` car `/app/` n'est pas writable par l'user superset → SQLite ne peut pas créer ses fichiers journal)
 3. Conserver le volume existant `simulation_stock.db` si présent
 4. Renommer le `container_name` en `superset_supplychain` (optionnel)
 
 **Validation :**
 ```bash
 docker compose -f docker-compose.simple.yml up -d
-docker exec superset_supplychain sqlite3 /app/supplychain_warehouses.db "SELECT COUNT(*) FROM warehouses"
+docker exec superset_supplychain python3 -c "import sqlite3; print(sqlite3.connect('/app/superset_home/supplychain_warehouses.db').execute('SELECT COUNT(*) FROM warehouses').fetchone()[0])"
 # Doit afficher : 20
 ```
 
@@ -71,9 +70,9 @@ docker exec superset_supplychain sqlite3 /app/supplychain_warehouses.db "SELECT 
 1. Lire `package.json` existant
 2. Ajouter dans `dependencies` :
    - `"leaflet": "^1.9.4"`
-   - `"react-leaflet": "^4.2.1"`
+   - `"react-leaflet": "^3.2.5"`
 3. Ajouter dans `devDependencies` :
-   - `"@types/leaflet": "^1.9.8"`
+   - `"@types/leaflet": "1.7.11"` (épinglé sans `^` — la v1.9.x utilise `using` qui requiert TypeScript 5+)
 4. Retirer `echarts` et `echarts-for-react` de `dependencies` (plus nécessaires)
 5. Exécuter `npm install`
 
@@ -282,7 +281,8 @@ npm test            # Tests unitaires
 ### 5.3 — Test d'intégration avec Superset
 
 1. Démarrer Docker : `docker compose -f docker-compose.simple.yml up -d`
-2. Créer la connexion DB dans Superset : `sqlite:////app/supplychain_warehouses.db`
+2. Créer la connexion DB dans Superset : `sqlite:////app/superset_home/supplychain_warehouses.db`
+   - ⚠️ Onglet Advanced → Security → **cocher Allow DML** (sinon UPDATE bloqué)
 3. Créer le dataset sur la table `warehouses`
 4. Créer un nouveau chart → choisir "Supplychain Warehouse"
 5. Configurer les colonnes (name, address, latitude, longitude, stock_size)

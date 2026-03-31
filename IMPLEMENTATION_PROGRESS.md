@@ -14,7 +14,7 @@
 | 2     | Types et configuration plugin  | ✅ Terminé  | 31/03/2026 |
 | 3     | Composant carte principal      | ✅ Terminé  | 31/03/2026 |
 | 4     | Tests                          | ✅ Terminé  | 31/03/2026 |
-| 5     | Intégration et polish          | 🔄 En cours | 31/03/2026 |
+| 5     | Intégration et polish          | ✅ Terminé  | 31/03/2026 |
 
 **Légende :** ⬜ À faire | 🔄 En cours | ✅ Terminé | ❌ Bloqué
 
@@ -26,7 +26,7 @@
 |-------|---------|--------|-------|
 | 0.1 — Créer le générateur de données | `generate_warehouses.py` | ✅ | 20 warehouses internationaux (5 continents), sqlite3 |
 | 0.2 — Mettre à jour Docker compose | `docker-compose.simple.yml` | ✅ | Volume en lecture-écriture |
-| 0.3 — Vérifier DB dans Docker | — | ⬜ | À faire au démarrage Docker |
+| 0.3 — Vérifier DB dans Docker | — | ✅ | Montée dans `/app/superset_home/`, 20 rows + write OK |
 
 ---
 
@@ -88,7 +88,7 @@
 | 5.2 — Nettoyage références | — | ✅ | Aucun "Brewery" / "Whareouse" dans le code |
 | 5.3 — Build TypeScript | — | ✅ | `npm run build` : 0 erreur |
 | 5.4 — Build complet | — | ✅ | CJS + ESM + ts-types : OK |
-| 5.5 — Test intégration Superset | — | ⬜ | À faire (voir checklist ci-dessous) |
+| 5.5 — Test intégration Superset | — | ✅ | Tous les tests de la checklist passés |
 | 5.6 — Commit et push | — | ✅ | feat(plugin): supplychain warehouse map |
 
 ---
@@ -97,16 +97,16 @@
 
 | # | Test | Résultat |
 |---|------|----------|
-| 1 | Les 20 warehouses s'affichent sur la carte du monde | ⬜ |
-| 2 | Zoom molette + pan carte fonctionnent | ⬜ |
-| 3 | Hover marqueur → tooltip nom + adresse + stock | ⬜ |
-| 4 | Clic marqueur → panneau d'édition s'ouvre | ⬜ |
-| 5 | Drag & drop → marqueur se déplace | ⬜ |
-| 6 | Saisie adresse + Géocoder → coordonnées calculées | ⬜ |
-| 7 | Enregistrer → DB mise à jour (vérifier SQL) | ⬜ |
-| 8 | Recharger le chart → positions persistées | ⬜ |
-| 9 | Annuler → marqueur revient à sa position | ⬜ |
-| 10 | Resize fenêtre → carte responsive | ⬜ |
+| 1 | Les 20 warehouses s'affichent sur la carte du monde | ✅ |
+| 2 | Zoom molette + pan carte fonctionnent | ✅ |
+| 3 | Hover marqueur → tooltip nom + adresse + stock | ✅ |
+| 4 | Clic marqueur → panneau d'édition s'ouvre | ✅ |
+| 5 | Drag & drop → marqueur se déplace | ✅ |
+| 6 | Saisie adresse + Géocoder → coordonnées calculées | ✅ |
+| 7 | Enregistrer → DB mise à jour (vérifier SQL) | ✅ |
+| 8 | Recharger le chart → positions persistées | ✅ |
+| 9 | Annuler → marqueur revient à sa position | ✅ |
+| 10 | Resize fenêtre → carte responsive | ✅ |
 
 ---
 
@@ -115,9 +115,15 @@
 | # | Date | Description | Résolution | Statut |
 |---|------|-------------|------------|--------|
 | 1 | 31/03/2026 | `@airbnb/config-babel` introuvable | Remplacé par `@babel/preset-env/react/typescript` standard | ✅ |
-| 2 | 31/03/2026 | `@types/leaflet@1.9.x` incompatible TypeScript 4 | Épinglé à `1.7.11` | ✅ |
+| 2 | 31/03/2026 | `@types/leaflet@1.9.x` incompatible TypeScript 4 | Épinglé à `1.7.11` (sans `^`) | ✅ |
 | 3 | 31/03/2026 | Conflit versions `@babel/cli` et `@babel/core` | Aligné toutes les versions Babel sur `^7.25.9` | ✅ |
 | 4 | 31/03/2026 | `@superset-ui/core` absent du dossier standalone | Ajout de `types/superset-shims.d.ts` avec stubs | ✅ |
+| 5 | 31/03/2026 | React 16 SyntheticEvent pooling → `e.target null` | Capturer `e.target.value` avant le functional setState updater | ✅ |
+| 6 | 31/03/2026 | `SupersetClient.post` erreur opaque (`undefined`) | Utiliser `body` + `parseMethod: 'json-bigint'` + `getClientErrorObject` (pattern sqlLab.js) | ✅ |
+| 7 | 31/03/2026 | `does not allow for DDL/DML` | Activer Allow DML sur la connexion DB dans Superset | ✅ |
+| 8 | 31/03/2026 | `L.map is not a function` | Extraire `module.default` du dynamic `import('leaflet')` (ESM namespace) | ✅ |
+| 9 | 31/03/2026 | `attempt to write a readonly database` | Monter la DB dans `/app/superset_home/` (writable par user superset) au lieu de `/app/` | ✅ |
+| 10 | 31/03/2026 | BOM UTF-8 ajouté par PowerShell `Set-Content` | Utiliser `[System.IO.File]::WriteAllText` avec `UTF8Encoding($false)` | ✅ |
 
 ---
 

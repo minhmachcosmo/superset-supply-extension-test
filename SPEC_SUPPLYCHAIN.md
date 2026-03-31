@@ -113,12 +113,18 @@ Générer **20 warehouses** répartis sur tous les continents de manière réali
 
 ### Intégration Docker
 
-Le fichier `docker-compose.simple.yml` doit monter la base **en lecture-écriture** (pas `:ro`) pour permettre la mise à jour depuis le plugin :
+Le fichier `docker-compose.simple.yml` doit monter la base dans un répertoire **writable par l'user superset** :
+
+> ⚠️ `/app/` appartient à root (`drwxr-xr-x`). SQLite a besoin de créer des fichiers journal (`-wal`, `-shm`) dans le même répertoire → utiliser `/app/superset_home/` qui est un volume Docker writable.
 
 ```yaml
 volumes:
-  - ./supplychain_warehouses.db:/app/supplychain_warehouses.db
+  - ./supplychain_warehouses.db:/app/superset_home/supplychain_warehouses.db
 ```
+
+**URI Superset** : `sqlite:////app/superset_home/supplychain_warehouses.db`
+
+**Allow DML** : Doit être activé sur la connexion database (Settings → Database Connections → Edit → Advanced → Security → ☑ Allow DML).
 
 ---
 
@@ -171,19 +177,26 @@ volumes:
 **Endpoint à utiliser :** API Superset `POST /api/v1/sqllab/execute/` ou appel direct via `SupersetClient` :
 
 ```typescript
-import { SupersetClient } from '@superset-ui/core';
+import { SupersetClient, getClientErrorObject } from '@superset-ui/core';
 
 // Exemple : mettre à jour les coordonnées d'un warehouse
+// Pattern identique à sqlLab.js (body + headers + parseMethod)
 await SupersetClient.post({
   endpoint: '/api/v1/sqllab/execute/',
-  jsonPayload: {
+  body: JSON.stringify({
     database_id: databaseId,
     sql: `UPDATE warehouses SET latitude = ${lat}, longitude = ${lng}, address = '${address}' WHERE id = ${warehouseId}`,
+    json: true,
     runAsync: false,
     schema: null,
-  },
+    expand_data: true,
+  }),
+  headers: { 'Content-Type': 'application/json' },
+  parseMethod: 'json-bigint',
 });
 ```
+
+> **⚠️ Important** : Ne PAS utiliser `jsonPayload`. Utiliser `body: JSON.stringify(...)` + `headers` + `parseMethod: 'json-bigint'` — c'est le pattern utilisé par Superset en interne (`sqlLab.js` ligne 352).
 
 > **Sécurité** : En environnement de développement/démo uniquement. En production, un endpoint dédié serait nécessaire.
 
@@ -403,15 +416,18 @@ loadChart: () => import('../SupplychainWarehouse'),
 {
   "dependencies": {
     "leaflet": "^1.9.4",
-    "react-leaflet": "^4.2.1"
+    "react-leaflet": "^3.2.5"
   },
   "devDependencies": {
-    "@types/leaflet": "^1.9.8"
+    "@types/leaflet": "1.7.11"
   }
 }
 ```
 
-> **Important** : Les dépendances `echarts` et `echarts-for-react` de la V1 peuvent être retirées.
+> **Important** :
+> - `react-leaflet` v4 requiert React 18 → utiliser **v3** pour Superset 4.1.1 (React 16.13.1)
+> - `@types/leaflet` épinglé à `1.7.11` (sans `^`) — la v1.9.x utilise `using` (TypeScript 5+)
+> - Les dépendances `echarts` et `echarts-for-react` de la V1 peuvent être retirées.
 
 ---
 
@@ -422,7 +438,7 @@ loadChart: () => import('../SupplychainWarehouse'),
 3. **Format tuples SelectControl** — `mapStateToProps` doit mapper en `[value, label]`
 4. **buildQuery : champs custom** — Lire les colonnes depuis `formData`, ne pas utiliser `formData.cols`
 5. **Pas de CSS externe** — Sauf le CSS Leaflet (`leaflet/dist/leaflet.css`) qui doit être importé ou injecté inline
-6. **SQLite en écriture** — Le volume Docker doit être monté SANS `:ro`
+6. **SQLite en écriture** — Le volume Docker doit être monté dans `/app/superset_home/` (pas `/app/`) car SQLite a besoin de créer des fichiers journal et `/app/` n'est pas writable par l'user `superset`. Allow DML doit être activé dans Superset.
 7. **Nominatim rate limit** — Max 1 requête/seconde. Ajouter un délai si nécessaire
 8. **Sécurité SQL** — Échapper les apostrophes dans les adresses (`replace(/'/g, "''")`)
 9. **`npm run build` doit passer** — TypeScript strict, pas de `any` sauf convention existante
