@@ -446,7 +446,11 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
           error.message ||
           error.statusText ||
           JSON.stringify(response);
-        setStatusMsg(`❌ Update failed: ${msg}`);
+        const dmlHint =
+          msg.includes('DML') || msg.includes('DDL') || msg.includes('read-only')
+            ? ' 💡 Fix: Settings → Database Connections → Edit DB_supply → Advanced → Security → ☑ Allow DML'
+            : '';
+        setStatusMsg(`❌ Update failed: ${msg}${dmlHint}`);
       }).catch(() => {
         setStatusMsg(`❌ Update failed: ${String(response)}`);
       });
