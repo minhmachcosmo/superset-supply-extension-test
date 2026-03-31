@@ -1,7 +1,7 @@
 {
-  "name": "superset-brewery-extension-test-1",
+  "name": "supplychain-wharehouse",
   "version": "0.1.0",
-  "description": "Superset Brewery Extension Test 1",
+  "description": "Supplychain Wharehouse",
   "sideEffects": false,
   "main": "lib/index.js",
   "module": "esm/index.js",

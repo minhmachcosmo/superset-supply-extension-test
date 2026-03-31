@@ -22,7 +22,7 @@ import controlPanel from './controlPanel';
 import transformProps from './transformProps';
 import thumbnail from '../images/thumbnail.png';
 
-export default class SupersetBreweryExtensionTest1 extends ChartPlugin {
+export default class SupplychainWharehouse extends ChartPlugin {
   /**
    * The constructor is used to pass relevant metadata and callbacks that get
    * registered in respective registries that are used throughout the library
@@ -35,15 +35,15 @@ export default class SupersetBreweryExtensionTest1 extends ChartPlugin {
    */
   constructor() {
     const metadata = new ChartMetadata({
-      description: 'Superset Brewery Extension Test 1',
-      name: t('Superset Brewery Extension Test 1'),
+      description: 'Supplychain Wharehouse',
+      name: t('supplychain wharehouse'),
       thumbnail,
     });
 
     super({
       buildQuery,
       controlPanel,
-      loadChart: () => import('../SupersetBreweryExtensionTest1'),
+      loadChart: () => import('../SupplychainWharehouse'),
       metadata,
       transformProps,
     });

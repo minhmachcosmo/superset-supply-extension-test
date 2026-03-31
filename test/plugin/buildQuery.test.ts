@@ -18,7 +18,7 @@
  */
 import buildQuery from '../../src/plugin/buildQuery';
 
-describe('SupersetBreweryExtensionTest1 buildQuery', () => {
+describe('SupplychainWharehouse buildQuery', () => {
   const formData = {
     datasource: '5__table',
     granularity_sqla: 'ds',

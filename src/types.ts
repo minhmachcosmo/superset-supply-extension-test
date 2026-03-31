@@ -20,7 +20,7 @@ import {
   QueryFormData,
 } from '@superset-ui/core';
 
-export interface SupersetBreweryExtensionTest1StylesProps {
+export interface SupplychainWhareouseStylesProps {
   height: number;
   width: number;
 }
@@ -34,7 +34,7 @@ export interface StockSimulationDataRecord {
   run_name: string;
 }
 
-interface SupersetBreweryExtensionTest1CustomizeProps {
+interface SupplychainWhareouseCustomizeProps {
   chartTitle: string;
   showLegend: boolean;
   showGrid: boolean;
@@ -44,11 +44,11 @@ interface SupersetBreweryExtensionTest1CustomizeProps {
   seriesColumn: string;
 }
 
-export type SupersetBreweryExtensionTest1QueryFormData = QueryFormData &
-  SupersetBreweryExtensionTest1StylesProps &
-  SupersetBreweryExtensionTest1CustomizeProps;
+export type SupplychainWhareouseQueryFormData = QueryFormData &
+  SupplychainWhareouseStylesProps &
+  SupplychainWhareouseCustomizeProps;
 
-export type SupersetBreweryExtensionTest1Props = SupersetBreweryExtensionTest1StylesProps &
-  SupersetBreweryExtensionTest1CustomizeProps & {
+export type SupplychainWhareouseProps = SupplychainWhareouseStylesProps &
+  SupplychainWhareouseCustomizeProps & {
     data: StockSimulationDataRecord[];
   };

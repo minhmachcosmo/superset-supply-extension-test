@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { SupersetBreweryExtensionTest1 } from '../src';
+import { SupplychainWharehouse } from '../src';
 
 /**
  * The example tests in this file act as a starting point, and
@@ -26,8 +26,8 @@ import { SupersetBreweryExtensionTest1 } from '../src';
  * treated correctly (e.g. formData from plugin controls
  * properly transform the data and/or any resulting props).
  */
-describe('superset-brewery-extension-test-1', () => {
+describe('supplychain-wharehouse', () => {
   it('exists', () => {
-    expect(SupersetBreweryExtensionTest1).toBeDefined();
+    expect(SupplychainWharehouse).toBeDefined();
   });
 });

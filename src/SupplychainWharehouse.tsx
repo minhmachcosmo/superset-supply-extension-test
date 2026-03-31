@@ -19,15 +19,15 @@
 import React, { useMemo } from 'react';
 import { styled } from '@superset-ui/core';
 import ReactECharts from 'echarts-for-react';
-import { SupersetBreweryExtensionTest1Props, SupersetBreweryExtensionTest1StylesProps } from './types';
+import { SupplychainWhareouseProps, SupplychainWhareouseStylesProps } from './types';
 
-const Styles = styled.div<SupersetBreweryExtensionTest1StylesProps>`
+const Styles = styled.div<SupplychainWhareouseStylesProps>`
   padding: ${({ theme }) => theme.gridUnit * 2}px;
   height: ${({ height }) => height}px;
   width: ${({ width }) => width}px;
 `;
 
-export default function SupersetBreweryExtensionTest1(props: SupersetBreweryExtensionTest1Props) {
+export default function SupplychainWharehouse(props: SupplychainWhareouseProps) {
   const { 
     data, 
     height, 
