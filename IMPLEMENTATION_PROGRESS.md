@@ -24,9 +24,9 @@
 
 | Tâche | Fichier | Statut | Notes |
 |-------|---------|--------|-------|
-| 0.1 — Créer le générateur de données | `generate_warehouses.py` | ⬜ | 10 warehouses, sqlite3 |
+| 0.1 — Créer le générateur de données | `generate_warehouses.py` | ⬜ | 20 warehouses internationaux (5 continents), sqlite3 |
 | 0.2 — Mettre à jour Docker compose | `docker-compose.simple.yml` | ⬜ | Volume en lecture-écriture |
-| 0.3 — Vérifier DB dans Docker | — | ⬜ | `SELECT COUNT(*) FROM warehouses` = 10 |
+| 0.3 — Vérifier DB dans Docker | — | ⬜ | `SELECT COUNT(*) FROM warehouses` = 20 |
 
 ---
 
@@ -98,7 +98,7 @@
 
 | # | Test | Résultat |
 |---|------|----------|
-| 1 | Les 10 warehouses s'affichent sur la carte | ⬜ |
+| 1 | Les 20 warehouses s'affichent sur la carte du monde | ⬜ |
 | 2 | Zoom molette + pan carte fonctionnent | ⬜ |
 | 3 | Hover marqueur → tooltip nom + adresse + stock | ⬜ |
 | 4 | Clic marqueur → panneau d'édition s'ouvre | ⬜ |

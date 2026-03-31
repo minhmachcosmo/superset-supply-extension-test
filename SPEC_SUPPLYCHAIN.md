@@ -57,26 +57,59 @@ Créer un plugin Apache Superset permettant d'**afficher des warehouses sur une 
 
 **Fichier : `generate_warehouses.py`** (racine du projet)
 
-Générer **10 warehouses** répartis en France et en Europe :
+Générer **20 warehouses** répartis sur tous les continents de manière réaliste (hubs logistiques internationaux) :
 
-| # | Nom                         | Ville      | Latitude | Longitude | Stock  |
-|---|-----------------------------|------------|----------|-----------|--------|
-| 1 | Paris Distribution Center   | Paris      | 48.8566  | 2.3522    | 15000  |
-| 2 | Lyon Logistics Hub          | Lyon       | 45.7640  | 4.8357    | 22000  |
-| 3 | Marseille Port Warehouse    | Marseille  | 43.2965  | 5.3698    | 18500  |
-| 4 | Bordeaux Wine Storage       | Bordeaux   | 44.8378  | -0.5792   | 9500   |
-| 5 | Lille North Depot           | Lille      | 50.6292  | 3.0573    | 12000  |
-| 6 | Strasbourg Euro Hub         | Strasbourg | 48.5734  | 7.7521    | 16000  |
-| 7 | Nantes Atlantic Center      | Nantes     | 47.2184  | -1.5536   | 11000  |
-| 8 | Toulouse Aero Depot         | Toulouse   | 43.6047  | 1.4442    | 20000  |
-| 9 | Brussels EU Warehouse       | Bruxelles  | 50.8503  | 4.3517    | 14000  |
-| 10| Frankfurt Central Depot    | Francfort  | 50.1109  | 8.6821    | 25000  |
+#### Europe (5)
+
+| # | Nom                              | Ville        | Pays        | Latitude | Longitude | Stock  |
+|---|----------------------------------|--------------|-------------|----------|-----------|--------|
+| 1 | Rotterdam Euro Hub               | Rotterdam    | Pays-Bas    | 51.9244  | 4.4777    | 45000  |
+| 2 | Frankfurt Central Depot          | Francfort    | Allemagne   | 50.1109  | 8.6821    | 38000  |
+| 3 | Paris Distribution Center        | Paris        | France      | 48.8566  | 2.3522    | 22000  |
+| 4 | Barcelona Mediterranean Hub      | Barcelone    | Espagne     | 41.3874  | 2.1686    | 19000  |
+| 5 | Warsaw Eastern Gateway           | Varsovie     | Pologne     | 52.2297  | 21.0122   | 16000  |
+
+#### Amérique du Nord (4)
+
+| # | Nom                              | Ville        | Pays        | Latitude | Longitude | Stock  |
+|---|----------------------------------|--------------|-------------|----------|-----------|--------|
+| 6 | Los Angeles West Coast Hub       | Los Angeles  | USA         | 33.9425  | -118.2551 | 52000  |
+| 7 | Chicago Midwest Distribution     | Chicago      | USA         | 41.8781  | -87.6298  | 41000  |
+| 8 | Houston Gulf Logistics           | Houston      | USA         | 29.7604  | -95.3698  | 35000  |
+| 9 | Toronto Canada Hub               | Toronto      | Canada      | 43.6532  | -79.3832  | 28000  |
+
+#### Asie-Pacifique (5)
+
+| # | Nom                              | Ville        | Pays        | Latitude | Longitude | Stock  |
+|---|----------------------------------|--------------|-------------|----------|-----------|--------|
+| 10| Shanghai Pacific Gateway         | Shanghai     | Chine       | 31.2304  | 121.4737  | 68000  |
+| 11| Singapore ASEAN Hub              | Singapour    | Singapour   | 1.3521   | 103.8198  | 42000  |
+| 12| Tokyo Kanto Depot                | Tokyo        | Japon       | 35.6762  | 139.6503  | 31000  |
+| 13| Mumbai West India Center         | Mumbai       | Inde        | 19.0760  | 72.8777   | 37000  |
+| 14| Sydney Oceania Warehouse         | Sydney       | Australie   | -33.8688 | 151.2093  | 24000  |
+
+#### Moyen-Orient & Afrique (4)
+
+| # | Nom                              | Ville        | Pays        | Latitude | Longitude | Stock  |
+|---|----------------------------------|--------------|-------------|----------|-----------|--------|
+| 15| Dubai Global Logistics Hub       | Dubaï        | EAU         | 25.2048  | 55.2708   | 55000  |
+| 16| Johannesburg Africa Gateway      | Johannesburg | Afrique S.  | -26.2041 | 28.0473   | 18000  |
+| 17| Cairo North Africa Depot         | Le Caire     | Égypte      | 30.0444  | 31.2357   | 14000  |
+| 18| Istanbul Crossroads Hub          | Istanbul     | Turquie     | 41.0082  | 28.9784   | 26000  |
+
+#### Amérique du Sud (2)
+
+| # | Nom                              | Ville        | Pays        | Latitude | Longitude | Stock  |
+|---|----------------------------------|--------------|-------------|----------|-----------|--------|
+| 19| São Paulo LATAM Center           | São Paulo    | Brésil      | -23.5505 | -46.6333  | 33000  |
+| 20| Panama Canal Logistics           | Panama City  | Panama      | 9.1050   | -79.4023  | 21000  |
 
 **Exigences du script :**
 1. Créer la base `supplychain_warehouses.db` (table `warehouses`, même schéma ci-dessus)
 2. Idempotent : `DROP TABLE IF EXISTS` + `CREATE TABLE`
-3. Afficher un résumé en console (nb lignes, noms des warehouses)
-4. Ne dépend que de la lib standard Python (`sqlite3`) — pas de pandas requis
+3. Insérer les 20 warehouses avec leurs adresses réalistes (ex: "Maasvlakte, 3199 Rotterdam, Netherlands")
+4. Afficher un résumé en console (nb lignes, répartition par continent)
+5. Ne dépend que de la lib standard Python (`sqlite3`) — pas de pandas requis
 
 ### Intégration Docker
 
@@ -192,7 +225,8 @@ docker-compose.simple.yml                 # Monter la nouvelle DB en lecture-éc
 # Sortie : supplychain_warehouses.db avec table warehouses
 # Schema : id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, address TEXT,
 #          latitude REAL, longitude REAL, stock_size INTEGER
-# 10 warehouses en France et Europe
+# 20 warehouses internationaux répartis sur 5 continents
+# Adresses réalistes (zones industrielles/portuaires connues)
 # Idempotent : DROP TABLE IF EXISTS + CREATE TABLE
 ```
 
@@ -400,7 +434,7 @@ loadChart: () => import('../SupplychainWarehouse'),
 
 | # | Test                                              | Résultat attendu                                         |
 |---|---------------------------------------------------|----------------------------------------------------------|
-| 1 | Ouvrir le chart → les 10 warehouses s'affichent   | Marqueurs avec icônes + noms visibles                    |
+| 1 | Ouvrir le chart → les 20 warehouses s'affichent   | Marqueurs avec icônes + noms visibles sur le monde       |
 | 2 | Zoom molette + pan carte                          | Carte interactive, fluide                                |
 | 3 | Hover marqueur                                    | Tooltip : nom + adresse + stock                          |
 | 4 | Clic marqueur → panneau d'édition                 | Panneau s'ouvre avec données pré-remplies                |

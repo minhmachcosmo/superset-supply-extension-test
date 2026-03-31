@@ -21,25 +21,25 @@
 
 ### 0.1 — Créer `generate_warehouses.py`
 
-**Objectif :** Générer le dataset SQLite avec 10 warehouses.
+**Objectif :** Générer le dataset SQLite avec 20 warehouses internationaux.
 
 **Instructions :**
-1. Lire la section "Données" de `SPEC_SUPPLYCHAIN.md` pour le schéma exact
+1. Lire la section "Données" de `SPEC_SUPPLYCHAIN.md` pour le schéma exact et la liste des 20 warehouses
 2. Créer le script `generate_warehouses.py` à la racine du projet
 3. Le script doit :
    - Utiliser uniquement `sqlite3` (lib standard Python, pas de pandas)
    - Créer `supplychain_warehouses.db` avec la table `warehouses`
    - Être idempotent (`DROP TABLE IF EXISTS` + `CREATE TABLE`)
-   - Insérer les 10 warehouses définis dans la spec
-   - Afficher un résumé en console
+   - Insérer les 20 warehouses définis dans la spec (5 continents, adresses réalistes)
+   - Afficher un résumé en console (nb lignes, répartition par continent)
 4. Exécuter le script et vérifier que la base est créée
 
 **Validation :**
 ```bash
 python generate_warehouses.py
-# Doit afficher : 10 warehouses insérés
+# Doit afficher : 20 warehouses insérés (Europe: 5, NA: 4, APAC: 5, MEA: 4, LATAM: 2)
 sqlite3 supplychain_warehouses.db "SELECT id, name, latitude, longitude FROM warehouses"
-# Doit afficher 10 lignes
+# Doit afficher 20 lignes
 ```
 
 ### 0.2 — Mettre à jour `docker-compose.simple.yml`
@@ -56,7 +56,7 @@ sqlite3 supplychain_warehouses.db "SELECT id, name, latitude, longitude FROM war
 ```bash
 docker compose -f docker-compose.simple.yml up -d
 docker exec superset_supplychain sqlite3 /app/supplychain_warehouses.db "SELECT COUNT(*) FROM warehouses"
-# Doit afficher : 10
+# Doit afficher : 20
 ```
 
 ---
@@ -287,7 +287,8 @@ npm test            # Tests unitaires
 4. Créer un nouveau chart → choisir "Supplychain Warehouse"
 5. Configurer les colonnes (name, address, latitude, longitude, stock_size)
 6. Configurer le Database ID et Table Name dans Chart Options
-7. Vérifier les 10 points de la checklist du plan de test dans `SPEC_SUPPLYCHAIN.md`
+7. Vérifier que les 20 warehouses s'affichent sur la carte du monde
+8. Vérifier les 10 points de la checklist du plan de test dans `SPEC_SUPPLYCHAIN.md`
 
 ### 5.4 — Commit et push
 
