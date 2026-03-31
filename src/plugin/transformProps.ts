@@ -17,35 +17,48 @@
  * under the License.
  */
 import { ChartProps } from '@superset-ui/core';
-import { StockSimulationDataRecord } from '../types';
+import { WarehouseRecord } from '../types';
 
 export default function transformProps(chartProps: ChartProps) {
   const { width, height, formData, queriesData } = chartProps;
-  const { 
-    chartTitle = 'Stock Simulation Over Time',
-    showLegend = true,
-    showGrid = true,
-    lineSmooth = false,
-    xAxisColumn = 'Probe_run',
-    yAxisColumn = 'StockMeasure',
-    seriesColumn = 'run_name',
+  const {
+    nameColumn = 'name',
+    addressColumn = 'address',
+    latitudeColumn = 'latitude',
+    longitudeColumn = 'longitude',
+    stockColumn = 'stock_size',
+    databaseId = 1,
+    tableName = 'warehouses',
   } = formData;
 
-  const data = queriesData[0].data as StockSimulationDataRecord[];
+  const rawData = (queriesData[0]?.data || []) as Record<string, unknown>[];
 
-  console.log('Chart data:', data);
-  console.log('Form data:', formData);
+  const idCol = 'id';
+  const nameCol = String(nameColumn);
+  const addrCol = String(addressColumn);
+  const latCol = String(latitudeColumn);
+  const lngCol = String(longitudeColumn);
+  const stockCol = String(stockColumn);
+
+  const data: WarehouseRecord[] = rawData.map(row => ({
+    id: Number(row[idCol] ?? row.ID ?? 0),
+    name: String(row[nameCol] ?? ''),
+    address: String(row[addrCol] ?? ''),
+    latitude: Number(row[latCol] ?? 0),
+    longitude: Number(row[lngCol] ?? 0),
+    stock_size: Number(row[stockCol] ?? 0),
+  }));
 
   return {
     width,
     height,
     data,
-    chartTitle,
-    showLegend,
-    showGrid,
-    lineSmooth,
-    xAxisColumn,
-    yAxisColumn,
-    seriesColumn,
+    nameColumn,
+    addressColumn,
+    latitudeColumn,
+    longitudeColumn,
+    stockColumn,
+    databaseId: Number(databaseId),
+    tableName,
   };
 }

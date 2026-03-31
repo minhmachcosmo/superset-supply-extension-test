@@ -22,7 +22,7 @@ import controlPanel from './controlPanel';
 import transformProps from './transformProps';
 import thumbnail from '../images/thumbnail.png';
 
-export default class SupplychainWharehouse extends ChartPlugin {
+export default class SupplychainWarehouse extends ChartPlugin {
   /**
    * The constructor is used to pass relevant metadata and callbacks that get
    * registered in respective registries that are used throughout the library
@@ -35,15 +35,15 @@ export default class SupplychainWharehouse extends ChartPlugin {
    */
   constructor() {
     const metadata = new ChartMetadata({
-      description: 'Supplychain Wharehouse',
-      name: t('supplychain wharehouse'),
+      description: 'Interactive warehouse map with drag & drop relocation',
+      name: t('Supplychain Warehouse'),
       thumbnail,
     });
 
     super({
       buildQuery,
       controlPanel,
-      loadChart: () => import('../SupplychainWharehouse'),
+      loadChart: () => import('../SupplychainWarehouse'),
       metadata,
       transformProps,
     });

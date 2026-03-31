@@ -19,16 +19,18 @@
 import { ChartProps, supersetTheme } from '@superset-ui/core';
 import transformProps from '../../src/plugin/transformProps';
 
-describe('SupplychainWharehouse transformProps', () => {
+describe('SupplychainWarehouse transformProps', () => {
   const formData = {
-    colorScheme: 'bnbColors',
     datasource: '3__table',
     granularity_sqla: 'ds',
-    metric: 'sum__num',
-    series: 'name',
-    boldText: true,
-    headerFontSize: 'xs',
-    headerText: 'my text',
+    viz_type: 'supplychain_warehouse',
+    name_column: 'name',
+    address_column: 'address',
+    latitude_column: 'latitude',
+    longitude_column: 'longitude',
+    stock_column: 'stock_size',
+    database_id: 1,
+    table_name: 'warehouses',
   };
   const chartProps = new ChartProps({
     formData,
@@ -36,18 +38,30 @@ describe('SupplychainWharehouse transformProps', () => {
     height: 600,
     theme: supersetTheme,
     queriesData: [{
-      data: [{ name: 'Hulk', sum__num: 1 }],
+      data: [{
+        id: 1,
+        name: 'Rotterdam Euro Hub',
+        address: 'Maasvlakte 2, Rotterdam',
+        latitude: 51.9244,
+        longitude: 4.4777,
+        stock_size: 45000,
+      }],
     }],
   });
 
-  it('should transform chart props for viz', () => {
-    expect(transformProps(chartProps)).toEqual({
-      width: 800,
-      height: 600,
-      boldText: true,
-      headerFontSize: 'xs',
-      headerText: 'my text',
-      data: [{ name: 'Hulk', sum__num: 1 }],
+  it('should transform chart props and map warehouse records', () => {
+    const result = transformProps(chartProps);
+    expect(result.width).toBe(800);
+    expect(result.height).toBe(600);
+    expect(result.tableName).toBe('warehouses');
+    expect(result.databaseId).toBe(1);
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0]).toMatchObject({
+      id: 1,
+      name: 'Rotterdam Euro Hub',
+      latitude: 51.9244,
+      longitude: 4.4777,
+      stock_size: 45000,
     });
   });
 });

@@ -18,17 +18,30 @@
  */
 import buildQuery from '../../src/plugin/buildQuery';
 
-describe('SupplychainWharehouse buildQuery', () => {
+describe('SupplychainWarehouse buildQuery', () => {
   const formData = {
     datasource: '5__table',
     granularity_sqla: 'ds',
-    series: 'foo',
-    viz_type: 'my_chart',
+    viz_type: 'supplychain_warehouse',
+    name_column: 'name',
+    address_column: 'address',
+    latitude_column: 'latitude',
+    longitude_column: 'longitude',
+    stock_column: 'stock_size',
   };
 
-  it('should build groupby with series in form data', () => {
+  it('should include id and all warehouse columns', () => {
     const queryContext = buildQuery(formData);
     const [query] = queryContext.queries;
-    expect(query.columns).toEqual(['foo']);
+    expect(query.columns).toEqual([
+      'id', 'name', 'address', 'latitude', 'longitude', 'stock_size',
+    ]);
+  });
+
+  it('should have empty metrics and groupby', () => {
+    const queryContext = buildQuery(formData);
+    const [query] = queryContext.queries;
+    expect(query.metrics).toEqual([]);
+    expect(query.groupby).toEqual([]);
   });
 });

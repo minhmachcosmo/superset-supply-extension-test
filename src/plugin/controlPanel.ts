@@ -17,87 +17,15 @@
  * under the License.
  */
 import { t, validateNonEmpty } from '@superset-ui/core';
-import {
-  ControlPanelConfig,
-  sharedControls,
-} from '@superset-ui/chart-controls';
+import { ControlPanelConfig } from '@superset-ui/chart-controls';
+
+const columnChoices = (state: any) => ({
+  choices: (state.datasource?.columns || []).map(
+    (c: any) => [c.column_name, c.verbose_name || c.column_name],
+  ),
+});
 
 const config: ControlPanelConfig = {
-  /**
-   * The control panel is split into two tabs: "Query" and
-   * "Chart Options". The controls that define the inputs to
-   * the chart data request, such as columns and metrics, usually
-   * reside within "Query", while controls that affect the visual
-   * appearance or functionality of the chart are under the
-   * "Chart Options" section.
-   *
-   * There are several predefined controls that can be used.
-   * Some examples:
-   * - groupby: columns to group by (translated to GROUP BY statement)
-   * - series: same as groupby, but single selection.
-   * - metrics: multiple metrics (translated to aggregate expression)
-   * - metric: sane as metrics, but single selection
-   * - adhoc_filters: filters (translated to WHERE or HAVING
-   *   depending on filter type)
-   * - row_limit: maximum number of rows (translated to LIMIT statement)
-   *
-   * If a control panel has both a `series` and `groupby` control, and
-   * the user has chosen `col1` as the value for the `series` control,
-   * and `col2` and `col3` as values for the `groupby` control,
-   * the resulting query will contain three `groupby` columns. This is because
-   * we considered `series` control a `groupby` query field and its value
-   * will automatically append the `groupby` field when the query is generated.
-   *
-   * It is also possible to define custom controls by importing the
-   * necessary dependencies and overriding the default parameters, which
-   * can then be placed in the `controlSetRows` section
-   * of the `Query` section instead of a predefined control.
-   *
-   * import { validateNonEmpty } from '@superset-ui/core';
-   * import {
-   *   sharedControls,
-   *   ControlConfig,
-   *   ControlPanelConfig,
-   * } from '@superset-ui/chart-controls';
-   *
-   * const myControl: ControlConfig<'SelectControl'> = {
-   *   name: 'secondary_entity',
-   *   config: {
-   *     ...sharedControls.entity,
-   *     type: 'SelectControl',
-   *     label: t('Secondary Entity'),
-   *     mapStateToProps: state => ({
-   *       sharedControls.columnChoices(state.datasource)
-   *       .columns.filter(c => c.groupby)
-   *     })
-   *     validators: [validateNonEmpty],
-   *   },
-   * }
-   *
-   * In addition to the basic drop down control, there are several predefined
-   * control types (can be set via the `type` property) that can be used. Some
-   * commonly used examples:
-   * - SelectControl: Dropdown to select single or multiple values,
-       usually columns
-   * - MetricsControl: Dropdown to select metrics, triggering a modal
-       to define Metric details
-   * - AdhocFilterControl: Control to choose filters
-   * - CheckboxControl: A checkbox for choosing true/false values
-   * - SliderControl: A slider with min/max values
-   * - TextControl: Control for text data
-   *
-   * For more control input types, check out the `incubator-superset` repo
-   * and open this file: superset-frontend/src/explore/components/controls/index.js
-   *
-   * To ensure all controls have been filled out correctly, the following
-   * validators are provided
-   * by the `@superset-ui/core/lib/validator`:
-   * - validateNonEmpty: must have at least one value
-   * - validateInteger: must be an integer value
-   * - validateNumber: must be an integer or decimal value
-   */
-
-  // For control input types, see: superset-frontend/src/explore/components/controls/index.js
   controlPanelSections: [
     {
       label: t('Query'),
@@ -105,52 +33,65 @@ const config: ControlPanelConfig = {
       controlSetRows: [
         [
           {
-            name: 'x_axis_column',
+            name: 'name_column',
             config: {
               type: 'SelectControl',
-              label: t('X-Axis Column (Time/Step)'),
-              description: t('Column for X-axis (e.g., Probe_run)'),
+              label: t('Name Column'),
+              description: t('Column containing the warehouse name'),
               default: null,
-              mapStateToProps: (state: any) => ({
-                choices: (state.datasource?.columns || []).map(
-                  (c: any) => [c.column_name, c.verbose_name || c.column_name]
-                ),
-              }),
+              mapStateToProps: columnChoices,
               validators: [validateNonEmpty],
             },
           },
         ],
         [
           {
-            name: 'y_axis_column',
+            name: 'address_column',
             config: {
               type: 'SelectControl',
-              label: t('Y-Axis Column (Value)'),
-              description: t('Column for Y-axis (e.g., StockMeasure)'),
+              label: t('Address Column'),
+              description: t('Column containing the warehouse address'),
               default: null,
-              mapStateToProps: (state: any) => ({
-                choices: (state.datasource?.columns || []).map(
-                  (c: any) => [c.column_name, c.verbose_name || c.column_name]
-                ),
-              }),
+              mapStateToProps: columnChoices,
               validators: [validateNonEmpty],
             },
           },
         ],
         [
           {
-            name: 'series_column',
+            name: 'latitude_column',
             config: {
               type: 'SelectControl',
-              label: t('Series Column (Groups)'),
-              description: t('Column to group by series (e.g., run_name)'),
+              label: t('Latitude Column'),
+              description: t('Column containing the GPS latitude'),
               default: null,
-              mapStateToProps: (state: any) => ({
-                choices: (state.datasource?.columns || []).map(
-                  (c: any) => [c.column_name, c.verbose_name || c.column_name]
-                ),
-              }),
+              mapStateToProps: columnChoices,
               validators: [validateNonEmpty],
+            },
+          },
+        ],
+        [
+          {
+            name: 'longitude_column',
+            config: {
+              type: 'SelectControl',
+              label: t('Longitude Column'),
+              description: t('Column containing the GPS longitude'),
+              default: null,
+              mapStateToProps: columnChoices,
+              validators: [validateNonEmpty],
+            },
+          },
+        ],
+        [
+          {
+            name: 'stock_column',
+            config: {
+              type: 'SelectControl',
+              label: t('Stock Column'),
+              description: t('Column containing the stock size'),
+              default: null,
+              mapStateToProps: columnChoices,
             },
           },
         ],
@@ -159,7 +100,8 @@ const config: ControlPanelConfig = {
           {
             name: 'row_limit',
             config: {
-              ...sharedControls.row_limit,
+              type: 'TextControl',
+              label: 'Row limit',
               default: 10000,
             },
           },
@@ -172,49 +114,27 @@ const config: ControlPanelConfig = {
       controlSetRows: [
         [
           {
-            name: 'chart_title',
+            name: 'database_id',
             config: {
               type: 'TextControl',
-              default: 'Stock Simulation Over Time',
-              renderTrigger: true,
-              label: t('Chart Title'),
-              description: t('Title displayed at the top of the chart'),
+              label: t('Database ID'),
+              description: t(
+                'Superset database ID used for UPDATE queries (find it in Settings → Database Connections)',
+              ),
+              default: '1',
+              renderTrigger: false,
             },
           },
         ],
         [
           {
-            name: 'show_legend',
+            name: 'table_name',
             config: {
-              type: 'CheckboxControl',
-              label: t('Show Legend'),
-              renderTrigger: true,
-              default: true,
-              description: t('Display legend for series'),
-            },
-          },
-        ],
-        [
-          {
-            name: 'show_grid',
-            config: {
-              type: 'CheckboxControl',
-              label: t('Show Grid'),
-              renderTrigger: true,
-              default: true,
-              description: t('Display grid lines'),
-            },
-          },
-        ],
-        [
-          {
-            name: 'line_smooth',
-            config: {
-              type: 'CheckboxControl',
-              label: t('Smooth Lines'),
-              renderTrigger: true,
-              default: false,
-              description: t('Apply smooth curve to lines'),
+              type: 'TextControl',
+              label: t('Table Name'),
+              description: t('SQL table name to update when a warehouse is moved'),
+              default: 'warehouses',
+              renderTrigger: false,
             },
           },
         ],

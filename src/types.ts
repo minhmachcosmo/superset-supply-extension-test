@@ -16,39 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {
-  QueryFormData,
-} from '@superset-ui/core';
+import { QueryFormData } from '@superset-ui/core';
 
-export interface SupplychainWhareouseStylesProps {
+export interface WarehouseRecord {
+  id: number;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  stock_size: number;
+}
+
+export interface SupplychainWarehouseStylesProps {
   height: number;
   width: number;
 }
 
-export interface StockSimulationDataRecord {
-  Simulation_run: string;
-  Probe_instance: string;
-  Probe_run: number;
-  StockMeasure: number;
-  csm_run_id: string;
-  run_name: string;
+interface SupplychainWarehouseCustomizeProps {
+  nameColumn: string;
+  addressColumn: string;
+  latitudeColumn: string;
+  longitudeColumn: string;
+  stockColumn: string;
+  databaseId: number;
+  tableName: string;
 }
 
-interface SupplychainWhareouseCustomizeProps {
-  chartTitle: string;
-  showLegend: boolean;
-  showGrid: boolean;
-  lineSmooth: boolean;
-  xAxisColumn: string;
-  yAxisColumn: string;
-  seriesColumn: string;
-}
+export type SupplychainWarehouseQueryFormData = QueryFormData &
+  SupplychainWarehouseStylesProps &
+  SupplychainWarehouseCustomizeProps;
 
-export type SupplychainWhareouseQueryFormData = QueryFormData &
-  SupplychainWhareouseStylesProps &
-  SupplychainWhareouseCustomizeProps;
-
-export type SupplychainWhareouseProps = SupplychainWhareouseStylesProps &
-  SupplychainWhareouseCustomizeProps & {
-    data: StockSimulationDataRecord[];
+export type SupplychainWarehouseProps = SupplychainWarehouseStylesProps &
+  SupplychainWarehouseCustomizeProps & {
+    data: WarehouseRecord[];
   };

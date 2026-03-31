@@ -9,7 +9,7 @@ services:
       - SUPERSET_ENV=production
       - PYTHONPATH=/app/pythonpath
     volumes:
-      - ./simulation_stock.db:/app/simulation_stock.db:ro
+      - ./supplychain_warehouses.db:/app/supplychain_warehouses.db
       - ./superset_config.py:/app/pythonpath/superset_config.py:ro
       - superset_home:/app/superset_home
     command: >
