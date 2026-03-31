@@ -405,15 +405,24 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
     const sql = `UPDATE ${tableName} SET latitude = ${lat}, longitude = ${lng}, address = '${sanitizedAddress}' WHERE id = ${editingId}`;
 
     try {
-      await (SupersetClient as any).post({
+      const result = await (SupersetClient as any).post({
         endpoint: '/api/v1/sqllab/execute/',
         jsonPayload: {
-          database_id: databaseId,
+          database_id: Number(databaseId),
           sql,
+          client_id: `wh-update-${editingId}-${Date.now()}`,
           runAsync: false,
           schema: null,
         },
       });
+
+      // Superset can return HTTP 200 but with an error in the JSON body
+      const json = result?.json;
+      if (json?.status === 'error' || json?.error) {
+        const errMsg = json.error || json.message || 'SQL execution failed';
+        setStatusMsg(`❌ Update failed: ${errMsg}`);
+        return;
+      }
 
       setWarehouses(prev =>
         prev.map(wh =>
@@ -424,8 +433,20 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
       );
       setStatusMsg('✅ Warehouse updated');
       setEditingId(null);
-    } catch (err) {
-      setStatusMsg(`❌ Update failed: ${(err as Error).message}`);
+    } catch (err: unknown) {
+      // SupersetClient throws a non-standard object { error, errors, message }
+      // rather than a standard Error instance
+      console.error('[SupplychainWarehouse] Save failed:', err);
+      const errObj = err as Record<string, unknown>;
+      const msg = String(
+        errObj?.message ||
+        errObj?.error ||
+        (Array.isArray(errObj?.errors)
+          ? (errObj.errors as Array<Record<string, unknown>>)[0]?.message
+          : undefined) ||
+        'request failed',
+      );
+      setStatusMsg(`❌ Update failed: ${msg}`);
     } finally {
       setIsLoading(false);
     }
