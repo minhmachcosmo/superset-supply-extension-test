@@ -459,7 +459,7 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
             <input
               type="text"
               value={editForm.address}
-              onChange={e => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+              onChange={e => { const v = e.target.value; setEditForm(prev => ({ ...prev, address: v })); }}
               placeholder="Address"
               style={{ flex: 1, padding: '4px 8px', border: '1px solid #d9d9d9', borderRadius: 4, fontSize: 12 }}
             />
@@ -476,7 +476,7 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
             <input
               type="number"
               value={editForm.latitude}
-              onChange={e => setEditForm(prev => ({ ...prev, latitude: e.target.value }))}
+              onChange={e => { const v = e.target.value; setEditForm(prev => ({ ...prev, latitude: v })); }}
               step="0.0001"
               style={{ width: 110, padding: '4px 8px', border: '1px solid #d9d9d9', borderRadius: 4, fontSize: 12 }}
             />
@@ -484,7 +484,7 @@ export default function SupplychainWarehouse(props: SupplychainWarehouseProps) {
             <input
               type="number"
               value={editForm.longitude}
-              onChange={e => setEditForm(prev => ({ ...prev, longitude: e.target.value }))}
+              onChange={e => { const v = e.target.value; setEditForm(prev => ({ ...prev, longitude: v })); }}
               step="0.0001"
               style={{ width: 110, padding: '4px 8px', border: '1px solid #d9d9d9', borderRadius: 4, fontSize: 12 }}
             />
